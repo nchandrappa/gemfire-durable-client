@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gfe="http://www.springframework.org/schema/gemfire"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<util:properties id="clientConfigurationProperties">
+		<prop key="durable-client-id">${gemfire.client.id:1}</prop>
+		<prop key="durable-client-timeout">${gemfire.client.timeout:300}</prop>
+	</util:properties>
+
+
+	<gfe:pool id="client" subscription-enabled="true" subscription-redundancy="1">
+	   <gfe:locator host="localhost" port="10334"/>
+	</gfe:pool>
+
+	<gfe:client-cache pool-name="client" properties-ref="clientConfigurationProperties" />
+
+	<gfe:cq-listener-container id="cq1" pool-name="client">
+	   <gfe:listener ref="listener" query="SELECT * from /Customer" durable="true"/>
+	</gfe:cq-listener-container>
+
+	<bean id="listener" class="io.pivotal.gemfire.durableclient.DurableCqListener"/>
+
+</beans>
